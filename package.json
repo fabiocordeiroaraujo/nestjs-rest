@@ -4,7 +4,7 @@
   "description": "Rest project example in NodeJS",
   "author": "Fabio Araujo",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
