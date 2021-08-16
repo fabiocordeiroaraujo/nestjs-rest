@@ -1,31 +1,55 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, HttpStatus, NotFoundException, Param, Post } from "@nestjs/common";
+import { NestResponse } from '../core/http/nest-response';
+import { NestResponseBuilder } from '../core/http/nest-response.builder';
 import { User } from "./user.entity";
 import { UserService } from "./user.service";
 
 @Controller('users')
 export class UserController {
 
-    constructor(private userService: UserService){
+    constructor(private userService: UserService) {
         this.userService = userService;
     }
 
     @Post()
-    public cria(@Body() usuario: User): User {
-        return this.userService.criar(usuario);
+    public cria(@Body() usuario: User): NestResponse {
+        const user = this.userService.criar(usuario);
+        return new NestResponseBuilder()
+            .setStatus(HttpStatus.CREATED)
+            .setHeaders({
+                'Location': `/users/${user.id}`
+            })
+            .setBody(user)
+            .build();
     }
 
     @Get()
     public lista(): User[] {
-        return this.userService.listar();
+        const users = this.userService.listar();        
+        return users;
     }
 
     @Get(':id')
     public recupera(@Param('id') id: number): User {
-        return this.userService.recuperar(id);
+        const user = this.userService.recuperar(id);
+        if (!user) {
+            throw new NotFoundException({
+                statusCode: HttpStatus.NOT_FOUND,
+                message: 'Usuário não encontrado'
+            });
+        }
+        return user;
     }
 
     @Get(':email')
     public recuperaPorEmail(@Param('email') email: string): User {
-        return this.userService.recuperarPorEmail(email);
+        const user = this.userService.recuperarPorEmail(email);
+        if (!user) {
+            throw new NotFoundException({
+                statusCode: HttpStatus.NOT_FOUND,
+                message: 'Usuário não encontrado'
+            });
+        }
+        return user;
     }
 }
