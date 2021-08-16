@@ -12,14 +12,14 @@ export class UserController {
     }
 
     @Post()
-    public cria(@Body() usuario: User): NestResponse {
-        const user = this.userService.criar(usuario);
+    public cria(@Body() user: User): NestResponse {
+        const userCreated = this.userService.criar(user);
         return new NestResponseBuilder()
             .setStatus(HttpStatus.CREATED)
             .setHeaders({
-                'Location': `/users/${user.id}`
+                'Location': `/users/${userCreated.id}`
             })
-            .setBody(user)
+            .setBody(userCreated)
             .build();
     }
 
