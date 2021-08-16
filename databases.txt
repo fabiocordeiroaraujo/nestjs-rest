@@ -1,0 +1,9 @@
+# MYSQL
+brew install mysql
+brew services start mysql
+mysql -uroot
+mysql
+> show databases;
+> create database nestjsrest;
+> use nestjsrest;
+> show tables;

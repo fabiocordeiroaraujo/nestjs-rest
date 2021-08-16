@@ -10,8 +10,8 @@ export class IsEmailUniqueConstraint implements ValidatorConstraintInterface {
         this.userService = userService;
     }
 
-    validate(email: string, validationArguments?: ValidationArguments): boolean | Promise<boolean> {
-        // O operador !! -> Transforma em Boolean
+    async validate(email: string, validationArguments?: ValidationArguments): Promise<boolean> {
+        // O operador !! -> Transforma em Boolean             
         return !!!this.userService.recuperarPorEmail(email);
     }
 }
@@ -19,11 +19,11 @@ export class IsEmailUniqueConstraint implements ValidatorConstraintInterface {
 export function IsEmailUnique(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
         registerDecorator({
+            name: 'IsEmailUnique',
             target: object.constructor,
             propertyName: propertyName,
-            options:  validationOptions,
-            constraints: [],
+            options:  validationOptions,            
             validator: IsEmailUniqueConstraint,
         });
-    }
+    };
 }

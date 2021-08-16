@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, NotFoundException, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, Post } from "@nestjs/common";
 import { NestResponse } from '../core/http/nest-response';
 import { NestResponseBuilder } from '../core/http/nest-response.builder';
 import { Product } from "./product.entity";
@@ -12,8 +12,11 @@ export class ProductController {
     }
 
     @Post()
-    public cria(@Body() product: Product): NestResponse {
-        const productCreated = this.productService.criar(product);
+    async cria(@Body() product: Product): Promise<NestResponse> {
+        let productCreated: Product;
+        await this.productService.criar(product).then(resp => {
+            productCreated = resp;            
+        });          
         return new NestResponseBuilder()
             .setStatus(HttpStatus.CREATED)
             .setHeaders({
@@ -24,14 +27,16 @@ export class ProductController {
     }
 
     @Get()
-    public lista(): Product[] {
-        const products = this.productService.listar();        
-        return products;
+    async lista(): Promise<Product[]> {     
+        return this.productService.listar();
     }
 
     @Get(':id')
-    public recupera(@Param('id') id: number): Product {
-        const product = this.productService.recuperar(id);
+    async recupera(@Param('id') id: number): Promise<Product> {
+        let product: Product; 
+        await this.productService.recuperar(id).then(resp => {
+            product = resp;            
+        });          
         if (!product) {
             throw new NotFoundException({
                 statusCode: HttpStatus.NOT_FOUND,
@@ -42,8 +47,11 @@ export class ProductController {
     }
 
     @Get(':codigo')
-    public recuperaPorCodigo(@Param('codigo') codigo: string): Product {
-        const product = this.productService.recuperarPorCodigo(codigo);
+    async recuperaPorCodigo(@Param('codigo') codigo: string): Promise<Product> {
+        let product: Product; 
+        await this.productService.recuperarPorCodigo(codigo).then(resp => {
+            product = resp;            
+        });          
         if (!product) {
             throw new NotFoundException({
                 statusCode: HttpStatus.NOT_FOUND,
@@ -51,5 +59,14 @@ export class ProductController {
             });
         }
         return product;
+    }
+
+    @Delete(':id')
+    public async apaga(@Param('id') id: number): Promise<NestResponse> {        
+        await this.productService.apagar(id);          
+        return new NestResponseBuilder()
+            .setStatus(HttpStatus.OK)            
+            .setBody({"id": id})
+            .build();
     }
 }

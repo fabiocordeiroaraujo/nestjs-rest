@@ -1,24 +1,31 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Product } from './product.entity';
 
 @Injectable()
 export class ProductService {
 
-  private products = [];
-
-  public criar(product: Product): Product {
-    product.id = this.products.length+1;
-    product.dataCadastro = new Date();
-    this.products.push(product);
-    return product;
+  constructor(
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>) {
   }
 
-  public listar(): Product[] {
-    return this.products;
+  async criar(product: Product): Promise<Product> {
+    product.dataCadastro = new Date();    
+    let productCreated: Product = this.productsRepository.create(product);
+    return this.productsRepository.save(productCreated)
   }
 
-  public recuperar(id: number): Product {
-    const foundProduct = this.products.find(u => u.id == id);
+  async listar(): Promise<Product[]> {
+    return this.productsRepository.find(); 
+  }
+
+  public async recuperar(id: number): Promise<Product> {
+    let foundProduct: Product
+    await this.recuperarRepo(id).then(resp => {
+      foundProduct = resp;
+    });  
     if (foundProduct != null) {
       return foundProduct
     } else {
@@ -26,12 +33,27 @@ export class ProductService {
     }    
   }
 
-  public recuperarPorCodigo(codigo: string): Product {
-    const foundProduct = this.products.find(u => u.codigo == codigo);
+  private async recuperarRepo(id: number): Promise<Product> {    
+    return this.productsRepository.findOne(id);
+  }
+
+  public async recuperarPorCodigo(codigo: string): Promise<Product> {
+    let foundProduct: Product; 
+    await this.recuperarPorCodigoRepo(codigo).then(resp => {
+      foundProduct = resp;
+    });  
     if (foundProduct != null) {
       return foundProduct
     } else {
       return null;
-    }    
+    }     
+  }
+
+  private async recuperarPorCodigoRepo(codigo: string): Promise<Product> {    
+    return this.productsRepository.findOne(codigo);
+  }
+
+  async apagar(id: number) {
+    const user = await this.productsRepository.delete(id);
   }
 }

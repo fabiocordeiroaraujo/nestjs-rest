@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, NotFoundException, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, NotFoundException, Param, Post } from "@nestjs/common";
 import { NestResponse } from '../core/http/nest-response';
 import { NestResponseBuilder } from '../core/http/nest-response.builder';
 import { User } from "./user.entity";
@@ -12,8 +12,11 @@ export class UserController {
     }
 
     @Post()
-    public cria(@Body() user: User): NestResponse {
-        const userCreated = this.userService.criar(user);
+    async cria(@Body() user: User): Promise<NestResponse> {
+        let userCreated: User;
+        await this.userService.criar(user).then(resp => {
+            userCreated = resp;            
+        });          
         return new NestResponseBuilder()
             .setStatus(HttpStatus.CREATED)
             .setHeaders({
@@ -24,14 +27,16 @@ export class UserController {
     }
 
     @Get()
-    public lista(): User[] {
-        const users = this.userService.listar();        
-        return users;
+    async lista(): Promise<User[]> {     
+        return this.userService.listar();
     }
 
     @Get(':id')
-    public recupera(@Param('id') id: number): User {
-        const user = this.userService.recuperar(id);
+    async recupera(@Param('id') id: number): Promise<User> {
+        let user: User; 
+        await this.userService.recuperar(id).then(resp => {
+            user = resp;            
+        });          
         if (!user) {
             throw new NotFoundException({
                 statusCode: HttpStatus.NOT_FOUND,
@@ -42,8 +47,11 @@ export class UserController {
     }
 
     @Get(':email')
-    public recuperaPorEmail(@Param('email') email: string): User {
-        const user = this.userService.recuperarPorEmail(email);
+    async recuperaPorEmail(@Param('email') email: string): Promise<User> {
+        let user: User; 
+        await this.userService.recuperarPorEmail(email).then(resp => {
+            user = resp;            
+        });          
         if (!user) {
             throw new NotFoundException({
                 statusCode: HttpStatus.NOT_FOUND,
@@ -51,5 +59,14 @@ export class UserController {
             });
         }
         return user;
+    }
+
+    @Delete(':id')
+    public async apaga(@Param('id') id: number): Promise<NestResponse> {        
+        await this.userService.apagar(id);          
+        return new NestResponseBuilder()
+            .setStatus(HttpStatus.OK)            
+            .setBody({"id": id})
+            .build();
     }
 }
