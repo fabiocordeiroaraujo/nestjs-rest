@@ -16,7 +16,7 @@ describe('UserController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(userController.listar()).toBe('Hello World!');
+      expect(userController.lista()).toBe('Hello World!');
     });
   });
 });
